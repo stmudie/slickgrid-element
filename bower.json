@@ -1,0 +1,16 @@
+{
+  "name": "slickgrid-element",
+  "version": "0.1.0",
+  "homepage": "https://github.com/stmudie/slickgrid-element",
+  "authors": [
+    "Stephen Mudie <stephen.mudie@synchrotron.org.au>"
+  ],
+  "description": "Webcomponent for slickgrid",
+  "main": "slickgrid-element.html",
+  "keywords": [
+    "[slickgrid",
+    "webcomponent",
+    "polymer]"
+  ],
+  "license": "MIT"
+}
