@@ -1,0 +1,464 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="bower_components/paper-dropdown/paper-dropdown.html">
+<link rel="import" href="bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="bower_components/core-menu/core-menu.html">
+<link rel="import" href="bower_components/paper-item/paper-item.html">
+
+<polymer-element name="slickgrid-element">
+    <template>
+        <link rel="stylesheet" href="bower_components/slickgrid/slick.grid.css">
+        <link rel="stylesheet" href="bower_components/slickgrid/examples/examples.css">
+        <link rel="stylesheet" href="bower_components/jquery-ui/themes/smoothness/jquery-ui.css">
+        <style>
+            :host {
+                /* Note: by default elements are always display:inline. */
+                    display: block;
+            }
+            #slickGrid {
+                width: {{ width }}px;
+                height: {{ height }}px;
+            }
+        </style>
+        <paper-checkbox id="autoEdit" checked="{{ autoEdit }}" label="Enable single click edit. Disable to select multiple cells." on-change="{{ autoEditTapped }}"></paper-checkbox>
+        <div id="slickGrid"></div>
+    </template>
+    <script src="bower_components/slickgrid/lib/jquery-1.7.min.js"></script>
+    <script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
+    <script src="bower_components/slickgrid/lib/jquery.event.drag-2.2.js"></script>
+    <script src="bower_components/slickgrid/slick.core.js"></script>
+    <script src="bower_components/slickgrid/plugins/slick.autotooltips.js"></script>
+    <script src="bower_components/slickgrid/plugins/slick.cellrangedecorator.js"></script>
+    <script src="bower_components/slickgrid/plugins/slick.cellrangeselector.js"></script>
+    <!--<script src="bower_components/slickgrid/plugins/slick.cellcopymanager.js"></script>-->
+    <script src="slick.cellexternalcopymanager.js"></script>
+    <script src="bower_components/slickgrid/plugins/slick.cellselectionmodel.js"></script>
+    <script src="bower_components/slickgrid/slick.editors.js"></script>
+    <script src="bower_components/slickgrid/slick.grid.polymer.js"></script>
+    <script>
+
+        var globalselectorColumnLists = [];
+        var globalselectorRowLists = [];
+
+        function AutoCompleteRowEditor(args) {
+            var $input;
+            var $menu;
+            var defaultValue;
+
+            var scope = this;
+
+            this.loading = false;
+
+            this.init = function () {
+
+              var first_str = '<div id="value"></div> ' +
+                                '      XZ                  ';
+
+              var last_str = '       </core-menu>                                ' +
+                             '   </paper-dropdown>                               ';
+
+
+              var middle_str = '';
+
+              globalselectorRowLists[args.item.rowhead].forEach(function(e){
+                middle_str += '<paper-item name=' + e + '>' + e + '</paper-item>'
+              });
+
+
+              $input = $(first_str + middle_str + last_str).appendTo(args.container);
+
+              $menu = $input[2].querySelector('core-menu');
+
+              $menu.addEventListener('core-select', function(a){
+                     if (!scope.loading) {
+                        $input[2].opened = false;
+                        $input[0].innerText = $menu.selected;
+                     }
+                     scope.loading = false;
+              });
+
+              $input[0].addEventListener('click', function(){
+                  $input[2].opened = true;
+              });
+
+            };
+
+            this.destroy = function () {
+              $input.remove();
+            };
+
+            this.focus = function () {
+              $input.focus();
+            };
+
+            this.getValue = function () {
+              return $menu.selected;
+            };
+
+            this.setValue = function (val) {
+              if ($menu.items.indexOf(val) >= 0){
+                $menu.selected = val;
+                }
+            };
+
+            this.loadValue = function (item) {
+              defaultValue = item[args.column.field] || "";
+              $menu.selected = defaultValue;
+              if (defaultValue != '') {
+                scope.loading = true;
+              }
+              //$input[0].defaultValue = defaultValue;
+              //$input.select();
+            };
+
+            this.serializeValue = function () {
+              return $menu.selected;
+            };
+
+            this.applyValue = function (item, state) {
+              item[args.column.field] = state;
+            };
+
+            this.isValueChanged = function () {
+              return (!($menu.selected == "" && defaultValue == null)) && ($menu.selected != defaultValue);
+            };
+
+            this.validate = function () {
+              if (args.column.validator) {
+                var validationResults = args.column.validator($input.selectedItemLabel);
+                if (!validationResults.valid) {
+                  return validationResults;
+                }
+              }
+
+              return {
+                valid: true,
+                msg: null
+              };
+            };
+
+            this.init();
+        }
+        function AutoCompleteColumnEditor(args) {
+            var $input;
+            var $menu;
+            var defaultValue;
+
+            var scope = this;
+
+            this.loading = false;
+
+            this.init = function () {
+
+              var first_str = '<div id="value"></div> ' +
+                                '      <paper-dropdown class="dropdown" duration="1" opened = "true">                ' +
+                              '       <core-menu class="menu" selected="test">                    ';
+
+              var last_str = '       </core-menu>                                ' +
+                             '   </paper-dropdown>                               ';
+
+
+
+              var middle_str = '';
+
+              globalselectorColumnLists[args.column.id].forEach(function(e){
+                middle_str += '<paper-item name=' + e + '>' + e + '</paper-item>'
+              });
+
+
+              $input = $(first_str + middle_str + last_str).appendTo(args.container);
+
+              $menu = $input[2].querySelector('core-menu');
+
+              $menu.addEventListener('core-select', function(a){
+                     if (!scope.loading) {
+                        $input[2].opened = false;
+                        $input[0].innerText = $menu.selected;
+                     }
+                     scope.loading = false;
+              });
+
+              $input[0].addEventListener('click', function(){
+                  $input[2].opened = true;
+              });
+
+            };
+
+            this.destroy = function () {
+              $input.remove();
+            };
+
+            this.focus = function () {
+              $input.focus();
+            };
+
+            this.getValue = function () {
+              return $menu.selected;
+            };
+
+            this.setValue = function (val) {
+              if ($menu.items.indexOf(val) >= 0){
+                $menu.selected = val;
+                }
+            };
+
+            this.loadValue = function (item) {
+              defaultValue = item[args.column.field] || "";
+              $menu.selected = defaultValue;
+              if (defaultValue != '') {
+                scope.loading = true;
+              }
+              //$input[0].defaultValue = defaultValue;
+              //$input.select();
+            };
+
+            this.serializeValue = function () {
+              return $menu.selected;
+            };
+
+            this.applyValue = function (item, state) {
+              item[args.column.field] = state;
+            };
+
+            this.isValueChanged = function () {
+              return (!($menu.selected == "" && defaultValue == null)) && ($menu.selected != defaultValue);
+            };
+
+            this.validate = function () {
+              if (args.column.validator) {
+                var validationResults = args.column.validator($input.selectedItemLabel);
+                if (!validationResults.valid) {
+                  return validationResults;
+                }
+              }
+
+              return {
+                valid: true,
+                msg: null
+              };
+            };
+
+            this.init();
+        }
+        function FloatEditor(args) {
+            var $input;
+            var defaultValue;
+            var scope = this;
+
+            this.init = function () {
+              $input = $("<INPUT type=text class='editor-text' />");
+
+              $input.bind("keydown.nav", function (e) {
+                if (e.keyCode === $.ui.keyCode.LEFT || e.keyCode === $.ui.keyCode.RIGHT) {
+                  e.stopImmediatePropagation();
+                }
+              });
+
+              $input.appendTo(args.container);
+              $input.focus().select();
+            };
+
+            this.destroy = function () {
+              $input.remove();
+            };
+
+            this.focus = function () {
+              $input.focus();
+            };
+
+            this.loadValue = function (item) {
+              defaultValue = item[args.column.field];
+              $input.val(defaultValue);
+              $input[0].defaultValue = defaultValue;
+              $input.select();
+            };
+
+            this.serializeValue = function () {
+              return parseFloat($input.val());
+            };
+
+            this.applyValue = function (item, state) {
+              item[args.column.field] = state;
+            };
+
+            this.isValueChanged = function () {
+              return (!($input.val() == "" && defaultValue == null)) && ($input.val() != defaultValue);
+            };
+
+            this.validate = function () {
+              if (isNaN($input.val())) {
+                return {
+                  valid: false,
+                  msg: "Please enter a valid integer"
+                };
+              }
+
+              return {
+                valid: true,
+                msg: null
+              };
+            };
+
+            this.init();
+        }
+
+        Polymer('slickgrid-element',{
+            publish : {
+                columns : {
+                    value : [
+                    ],
+                    reflect : true
+                },
+                data : {
+                    value : [
+                    ],
+                    reflect : true
+                },
+                dataobj : {
+                    value : {},
+                    reflect: true
+                },
+                width : {
+                    value : 600,
+                    reflect: true
+                },
+                height : {
+                    value : 450,
+                    reflect: true
+                },
+                autoEdit : {
+                    value : true,
+                    reflect: true
+                },
+                selectorcolumn : {
+                    value :'',
+                    reflect : true
+                },
+                selectorrow : {
+                    value :'',
+                    reflect : true
+                },
+                roweditors :{
+                    value : {},
+                    reflect : true
+                }
+            },
+            autoEditTapped : function(value, detail, sender){
+                var options = this.grid.getOptions();
+                if (sender.checked){
+                    options.autoEdit = true;
+                    this.grid.setOptions(options);
+                } else {
+                    options.autoEdit = false;
+                    this.grid.setOptions(options);
+                }
+
+            },
+            selectorcolumnChanged : function(oldValue, newValue){
+                globalselectorColumnLists = JSON.parse(newValue);
+            },
+            selectorrowChanged : function(oldValue, newValue){
+                globalselectorRowLists = JSON.parse(newValue);
+            },
+            dataChanged : function(oldValue, newValue) {
+                    this.dataobj = JSON.parse(newValue)
+                    this.dataobj.getItemMetadata = this.formatColumns;
+                    this.grid.setData(this.dataobj);
+                    this.grid.invalidateAllRows();
+                    this.grid.render();
+            },
+            formatColumns : function(row){
+                var columns = {};
+
+                rowheader = this[row].rowhead;
+
+                roweditors = document.querySelector('slickgrid-element').roweditors;
+
+                if (roweditors[rowheader] != null) {
+                    for (var property in roweditors[rowheader]){
+                        if (roweditors[rowheader].hasOwnProperty(property)){
+                            columns[property] = {
+                                editor: roweditors[rowheader][property]
+                            }
+                        }
+                    }
+                }
+
+                return { "columns": columns};
+            },
+            grid: '',
+            ready: function(){
+
+                var options = {
+                    enableCellNavigation: true,
+                    enableColumnReorder: true,
+                    editable: true,
+                    autoEdit: true,
+                    explicitInitialization: true
+                };
+
+                var self = this;
+
+                $(function(){
+
+                    self.grid = new Slick.Grid(self.$.slickGrid, self.dataobj, self.columns, options);
+                    self.dataobj.getItemMetadata = self.formatColumns;
+                    self.grid.setSelectionModel(new Slick.CellSelectionModel());
+
+					self.grid.registerPlugin(new Slick.CellExternalCopyManager());
+
+                    //  delay init to ensure DOM is ready. This assumes that explicitInitialization option is set.
+                    setTimeout(function(){
+                        self.grid.init();
+
+                        // Following kludge to inline css on slickGrid div instead of head (where they aren't accessible)
+                        //*******************************************************************
+                        var styles = [];
+                        var styleSheets = window.document.styleSheets;
+                        $.each(styleSheets, function(i, sheet) {
+                            var sheet = styleSheets[i];
+                            if (sheet.cssRules) {
+                                $.each($.makeArray(sheet.cssRules), function(i, rule) {
+                                    if (rule.cssText && /slickgrid/.test(rule.cssText)) {
+                                        styles.push(rule.cssText);
+                                    }
+                                })
+                            }
+                        });
+
+                        var inlineStyles = '';
+                        $.each(styles, function(i, style) {
+                            inlineStyles += (style + "\n");
+                        });
+                        inlineStyles = '<style type="text/css">' + inlineStyles + '</style>';
+                        $(self.$.slickGrid).before(inlineStyles);
+
+                        //********************************************************************
+
+                    },1);
+
+                    self.grid.onClick.subscribe(function(e, args){
+                        self.fire('select', {value: e.target.innerText, row: args.row, column: args.cell});
+                    });
+                    self.grid.onDblClick.subscribe(function(e, args){
+                        self.fire('doubleselect', {value: e.target.innerText, row: args.row, column: args.cell});
+                    });
+                    self.grid.onBeforeEditCell.subscribe(function(e, args){
+                        self.fire('before', {row: args.row, column: args.cell});
+                    });
+                    self.grid.onContextMenu.subscribe(function(e, args){
+                        self.fire('context', {row: args.row, column: args.cell});
+                    });
+                    self.grid.onCellChange.subscribe(function(e, args){
+                        self.data = JSON.stringify(self.grid.getData());
+                        self.fire('change', {row: args.row, column: args.cell});
+                    });
+                    self.grid.onAddNewRow.subscribe(function(e, args){
+                        self.fire('newrow', {row: args.row, column: args.cell});
+                    });
+                });
+            }
+        });
+    </script>
+
+</polymer-element>
