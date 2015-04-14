@@ -1,15 +1,15 @@
-<link rel="import" href="bower_components/polymer/polymer.html">
-<link rel="import" href="bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="bower_components/paper-dropdown/paper-dropdown.html">
-<link rel="import" href="bower_components/paper-checkbox/paper-checkbox.html">
-<link rel="import" href="bower_components/core-menu/core-menu.html">
-<link rel="import" href="bower_components/paper-item/paper-item.html">
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-dropdown/paper-dropdown.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../core-menu/core-menu.html">
+<link rel="import" href="../paper-item/paper-item.html">
 
 <polymer-element name="slickgrid-element">
     <template>
-        <link rel="stylesheet" href="bower_components/slickgrid/slick.grid.css">
-        <link rel="stylesheet" href="bower_components/slickgrid/examples/examples.css">
-        <link rel="stylesheet" href="bower_components/jquery-ui/themes/smoothness/jquery-ui.css">
+        <link rel="stylesheet" href="../slickgrid/slick.grid.css">
+        <link rel="stylesheet" href="../slickgrid/examples/examples.css">
+        <link rel="stylesheet" href="../jquery-ui/themes/smoothness/jquery-ui.css">
         <style>
             :host {
                 /* Note: by default elements are always display:inline. */
@@ -23,18 +23,18 @@
         <paper-checkbox id="autoEdit" checked="{{ autoEdit }}" label="Enable single click edit. Disable to select multiple cells." on-change="{{ autoEditTapped }}"></paper-checkbox>
         <div id="slickGrid"></div>
     </template>
-    <script src="bower_components/slickgrid/lib/jquery-1.7.min.js"></script>
-    <script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
-    <script src="bower_components/slickgrid/lib/jquery.event.drag-2.2.js"></script>
-    <script src="bower_components/slickgrid/slick.core.js"></script>
-    <script src="bower_components/slickgrid/plugins/slick.autotooltips.js"></script>
-    <script src="bower_components/slickgrid/plugins/slick.cellrangedecorator.js"></script>
-    <script src="bower_components/slickgrid/plugins/slick.cellrangeselector.js"></script>
-    <!--<script src="bower_components/slickgrid/plugins/slick.cellcopymanager.js"></script>-->
+    <script src="../slickgrid/lib/jquery-1.7.min.js"></script>
+    <script src="../jquery-ui/jquery-ui.min.js"></script>
+    <script src="../slickgrid/lib/jquery.event.drag-2.2.js"></script>
+    <script src="../slickgrid/slick.core.js"></script>
+    <script src="../slickgrid/plugins/slick.autotooltips.js"></script>
+    <script src="../slickgrid/plugins/slick.cellrangedecorator.js"></script>
+    <script src="../slickgrid/plugins/slick.cellrangeselector.js"></script>
+    <!--<script src="../slickgrid/plugins/slick.cellcopymanager.js"></script>-->
     <script src="slick.cellexternalcopymanager.js"></script>
-    <script src="bower_components/slickgrid/plugins/slick.cellselectionmodel.js"></script>
-    <script src="bower_components/slickgrid/slick.editors.js"></script>
-    <script src="bower_components/slickgrid/slick.grid.polymer.js"></script>
+    <script src="../slickgrid/plugins/slick.cellselectionmodel.js"></script>
+    <script src="../slickgrid/slick.editors.js"></script>
+    <script src="../slickgrid/slick.grid.polymer.js"></script>
     <script>
 
         var globalselectorColumnLists = [];
