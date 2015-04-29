@@ -20,7 +20,9 @@
                 height: {{ height }}px;
             }
         </style>
-        <paper-checkbox id="autoEdit" checked="{{ autoEdit }}" label="Enable single click edit. Disable to select multiple cells." on-change="{{ autoEditTapped }}"></paper-checkbox>
+        <template if="{{ showenablesingleclick }}">
+            <paper-checkbox id="autoEdit" checked="{{ autoEdit }}" label="Enable single click edit. Disable to select multiple cells." on-change="{{ autoEditTapped }}"></paper-checkbox>
+        </template>
         <div id="slickGrid"></div>
     </template>
     <script src="../slickgrid/lib/jquery-1.7.min.js"></script>
@@ -302,16 +304,20 @@
             this.init();
         }
 
+        TextEditor = Slick.Editors.Text
+
         Polymer('slickgrid-element',{
             publish : {
                 columns : {
-                    value : [
-                    ],
+                    value : [],
                     reflect : true
                 },
+                columnsobj: {
+                    value: {},
+                    reflect: true
+                },
                 data : {
-                    value : [
-                    ],
+                    value : [],
                     reflect : true
                 },
                 dataobj : {
@@ -319,7 +325,7 @@
                     reflect: true
                 },
                 width : {
-                    value : 600,
+                    value : 800,
                     reflect: true
                 },
                 height : {
@@ -341,6 +347,10 @@
                 roweditors :{
                     value : {},
                     reflect : true
+                },
+                showenablesingleclick: {
+                    value: true,
+                    reflect: true
                 }
             },
             autoEditTapped : function(value, detail, sender){
@@ -360,8 +370,17 @@
             selectorrowChanged : function(oldValue, newValue){
                 globalselectorRowLists = JSON.parse(newValue);
             },
+            columnsChanged : function(oldValue, newValue) {
+                var columnsobj = JSON.parse(newValue);
+                columnsobj.forEach(function(e, i){
+                    columnsobj[i].editor = window[e.editor]
+                });
+                this.columnsobj = columnsobj;
+                this.grid.setColumns(this.columnsobj);
+                this.moveCss();
+            },
             dataChanged : function(oldValue, newValue) {
-                    this.dataobj = JSON.parse(newValue)
+                    this.dataobj = JSON.parse(newValue);
                     this.dataobj.getItemMetadata = this.formatColumns;
                     this.grid.setData(this.dataobj);
                     this.grid.invalidateAllRows();
@@ -387,21 +406,49 @@
                 return { "columns": columns};
             },
             grid: '',
+            moveCss: function(){
+                // Following kludge to inline css on slickGrid div instead of head (where they aren't accessible)
+                //*******************************************************************
+                var styles = [];
+                var styleSheets = window.document.styleSheets;
+                $.each(styleSheets, function (i, sheet) {
+                    var sheet = styleSheets[i];
+                    if (sheet.cssRules) {
+                        $.each($.makeArray(sheet.cssRules), function (i, rule) {
+                            if (rule.cssText && /slickgrid/.test(rule.cssText)) {
+                                styles.push(rule.cssText);
+                            }
+                        })
+                    }
+                });
+
+                var inlineStyles = '';
+                $.each(styles, function (i, style) {
+                    inlineStyles += (style + "\n");
+                });
+                inlineStyles = '<style type="text/css">' + inlineStyles + '</style>';
+                $(this.$.slickGrid).before(inlineStyles);
+
+                //********************************************************************
+            },
             ready: function(){
+
+
 
                 var options = {
                     enableCellNavigation: true,
                     enableColumnReorder: true,
                     editable: true,
                     autoEdit: true,
-                    explicitInitialization: true
+                    explicitInitialization: true,
+                    autosizeColumns: true
                 };
 
                 var self = this;
 
                 $(function(){
 
-                    self.grid = new Slick.Grid(self.$.slickGrid, self.dataobj, self.columns, options);
+                    self.grid = new Slick.Grid(self.$.slickGrid, self.dataobj, self.columnsobj, options);
                     self.dataobj.getItemMetadata = self.formatColumns;
                     self.grid.setSelectionModel(new Slick.CellSelectionModel());
 
@@ -411,29 +458,7 @@
                     setTimeout(function(){
                         self.grid.init();
 
-                        // Following kludge to inline css on slickGrid div instead of head (where they aren't accessible)
-                        //*******************************************************************
-                        var styles = [];
-                        var styleSheets = window.document.styleSheets;
-                        $.each(styleSheets, function(i, sheet) {
-                            var sheet = styleSheets[i];
-                            if (sheet.cssRules) {
-                                $.each($.makeArray(sheet.cssRules), function(i, rule) {
-                                    if (rule.cssText && /slickgrid/.test(rule.cssText)) {
-                                        styles.push(rule.cssText);
-                                    }
-                                })
-                            }
-                        });
-
-                        var inlineStyles = '';
-                        $.each(styles, function(i, style) {
-                            inlineStyles += (style + "\n");
-                        });
-                        inlineStyles = '<style type="text/css">' + inlineStyles + '</style>';
-                        $(self.$.slickGrid).before(inlineStyles);
-
-                        //********************************************************************
+                        self.moveCss();
 
                     },1);
 
@@ -455,6 +480,12 @@
                     });
                     self.grid.onAddNewRow.subscribe(function(e, args){
                         self.fire('newrow', {row: args.row, column: args.cell});
+                    });
+                    self.grid.onColumnsResized.subscribe(function(e, args){
+                        self.moveCss();
+                    });
+                    self.grid.onColumnsReordered.subscribe(function(e, args){
+                        self.moveCss();
                     });
                 });
             }
