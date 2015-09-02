@@ -3,6 +3,7 @@ Webcomponent for slickgrid. For slickgrid-element to work, a small change needs 
     Change:   while ((elem = elem.parentNode) != document.body && elem != null) {
     To:       while ((elem = elem.parentNode) != document.body && elem != null && elem.parentNode.toString() != "[object ShadowRoot]") {
 and
+
     Change:   while ((elem = elem.parentNode) != document.body) {
     To:       while ((elem = elem.parentNode) != document.body && elem.toString() != "[object ShadowRoot]") {
 
