@@ -445,7 +445,7 @@ if (typeof Slick === "undefined") {
     // TODO:  this is static.  need to handle page mutation.
     function bindAncestorScrollEvents() {
       var elem = $canvas[0];
-      while ((elem = elem.parentNode) != document.body && elem != null && elem.parentNode.toString() != "[object ShadowRoot]") {
+      while ((elem = elem.parentNode) != document.body && elem != null && elem.parentNode != null && elem.parentNode.toString() != "[object ShadowRoot]") {
         // bind to scroll containers only
         if (elem == $viewport[0] || elem.scrollWidth != elem.clientWidth || elem.scrollHeight != elem.clientHeight) {
           var $elem = $(elem);
